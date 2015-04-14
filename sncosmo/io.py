@@ -4,12 +4,15 @@
 from __future__ import print_function
 
 from warnings import warn
+from io import StringIO
 import os
 import sys
 import re
 import json
+import gzip
 
 import numpy as np
+import scipy
 from astropy.utils import OrderedDict as odict
 from astropy.table import Table
 from astropy.io import fits
@@ -726,3 +729,26 @@ def load_example_data():
     filename = get_pkg_data_filename(
         'data/examples/example_photometric_data.dat')
     return read_lc(filename, format='ascii')
+
+
+def rdsyngf(calc_file,return_all=False):
+
+  f = gzip.open(calc_file,'rb')
+  file_content = f.read()
+  f.close()
+  file_content = file_content.decode("utf-8")
+  file_content = file_content.replace("D","E")
+  calc = scipy.loadtxt(StringIO(file_content))
+  w = calc[:,0]
+  f = 10.**calc[:,1]
+  if return_all:
+    data = dict()
+    data['wave'] = w
+    data['flux'] = f
+    data['B'] = 10.**calc[:,2]
+    data['L'] = 10.**calc[:,3]
+    data['fedd'] = calc[:,4]
+    return data
+  else:
+    return w,f
+

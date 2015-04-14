@@ -24,7 +24,7 @@ from astropy.utils.data import get_pkg_data_filename
 from . import registry
 from . import io
 from .utils import download_file, download_dir
-from .models import Source, TimeSeriesSource, SALT2Source
+from .models import Source, TimeSeriesSource, SALT2Source, PHOENIXModelSource
 from .spectral import (Bandpass, read_bandpass, Spectrum, MagSystem,
                        SpectralMagSystem, ABMagSystem)
 from . import conf
@@ -161,6 +161,9 @@ def load_timeseries_fits_local(pkg_data_name, name=None, version=None):
 def load_salt2model(relpath, name=None, version=None):
     abspath = get_abspath(relpath, name, version=version)
     return SALT2Source(modeldir=abspath, name=name, version=version)
+
+def load_phx_gz_spectrum(abspath, name):
+    return PHOENIXModelSource(modeldir=abspath, name=name)
 
 
 def load_2011fe(relpath, name=None, version=None):
@@ -466,6 +469,11 @@ registry.register_loader(Source, 'hsiao-subsampled',
                          load_timeseries_fits_local,
                          args=['data/models/Hsiao_SED_V3_subsampled.fits'],
                          version='3.0', meta=meta)
+
+# PHOENIX synthetic spectra
+registry.register_loader(Source, 'phoenix',
+                         load_phx_gz_spectrum,
+                         args=['/home/brian'])
 
 # SALT2 models
 website = 'http://supernovae.in2p3.fr/salt/doku.php?id=salt_templates'

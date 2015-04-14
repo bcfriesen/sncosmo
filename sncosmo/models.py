@@ -17,7 +17,7 @@ from astropy.utils.misc import isiterable
 from astropy import (cosmology, units as u, constants as const)
 from astropy.extern import six
 
-from .io import read_griddata_ascii
+from .io import read_griddata_ascii, rdsyngf
 from . import registry
 from .spectral import get_bandpass, get_magsystem, Bandpass
 try:
@@ -655,6 +655,23 @@ class SALT2Source(Source):
         m1 = self._model['M1'](phase, wave)
         return (self._parameters[0] * (m0 + self._parameters[1] * m1) *
                 self._model['clbase'](wave)**self._parameters[2])
+
+
+
+class PHOENIXModelSource(Source):
+    def __init__(self, modeldir, name):
+        self.modfile = modeldir + "/" + name
+        self._wave, self._f = rdsyngf(self.modfile)
+        self._parameters = np.array([0])
+        self._param_names = ['herp', 'derp']
+        self.param_names_latex = ['herp', 'derp']
+        self.name = name
+
+    def _flux(self, phase, wave):
+        flux_2d = np.empty([1, len(wave)])
+        flux_2d[0, :] = np.interp(wave, self._wave, self._f)
+        return flux_2d
+
 
     def _errsnakesq(self, wave, phase):
         """Return the errorsnake squared (model variance) for the given
